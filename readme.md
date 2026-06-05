@@ -39,6 +39,28 @@ gcc -o vpn-switcher vpn-switcher.c -lpthread
 
 ### 2. Install (Optional)
 
+
+Because the daemon runs directly in the foreground, we configure the systemd service
+using `Type=simple`. This enables the system log service to aggregate all outputs
+and logs natively.
+
+Write the following configuration directly to `/etc/systemd/system/vpn-switcher.service`:
+
+```ini
+[Unit]
+Description=VPN Switcher Foreground Daemon
+After=network.target network-online.target NetworkManager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/vpn-switcher --daemon
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ```bash
 sudo cp vpn-switcher /usr/local/bin/
 sudo chmod +x /usr/local/bin/vpn-switcher
@@ -105,17 +127,6 @@ vpn-switcher --set-nameserver 8.8.8.8
 vpn-switcher --trigger up "HomeWiFi"
 ```
 
-### Status Output Example
-
-```
-Current State      : tailscale
-Active Network     : Home
-Operating Mode     : auto
-Configured DNS     : 1.1.1.1
-None Patterns      : 0 registered
-Tailscale Patterns : 1 registered
-WARP Patterns      : 2 registered
-```
 
 ## How It Works
 
